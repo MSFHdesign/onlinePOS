@@ -1,3 +1,4 @@
+# Laravel
 /vendor/
 node_modules/
 npm-debug.log
@@ -28,3 +29,22 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+# Vue / Vite / Frontend
+**/node_modules/
+**/dist/
+**/.vite/
+**/.DS_Store
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
+**/.env.local
+**/.env.development
+**/.env.production
+**/vite.config.ts
+**/.output/
+
+# VS Code & OS
+.vscode/
+.DS_Store
+Thumbs.db
