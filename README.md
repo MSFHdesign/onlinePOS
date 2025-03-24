@@ -1,2 +1,37 @@
 # onlinePOS
 tech-challenge from OnlinePos
+
+##  Udviklingsplan & Dagsorden
+
+Dette projekt er mit svar på test casen fra OnlinePOS og løses over en periode på ca. 7 dage. Målet er at udvikle en simpel og robust løsning med fokus på arkitektur, kodekvalitet og overholdelse af kravene.
+
+###  Overordnede mål
+
+- Implementere et RESTful API til produktadministration (CRUD + sortering)
+- Følge best practices inden for Laravel-udvikling
+- Levere en løsning, der er struktureret, overskuelig og nem at videreudvikle
+- Forberede løsningen til frontend-integration (Vue 3 / PrimeVue)
+- Uploade kode til GitHub og, hoste på en gratis platform (Railway & Vercel)
+
+###  Planlagt dagsorden
+
+| Dag | Fokusområde                                       |
+|-----|---------------------------------------------------|
+| 1   | Opsætning af Laravel-projekt og database          |
+| 2   |       |
+| 3   |       |
+| 4   |       |
+| 5   |       |
+| 6   |       |
+| 7   |       |
+
+### 🛠 Teknologistak
+
+- **Laravel (PHP)** – backend og REST API
+- **MySQL** – database
+- Frontend og UI implementeres i Vue 3 med PrimeVue
+
+### 📝 Aflevering
+
+Projektet leveres via GitHub med README og evt. link til en live version.  
+Derudover dokumenteres, hvordan projektet køres lokalt.
