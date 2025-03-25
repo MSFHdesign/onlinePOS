@@ -41,7 +41,6 @@ auth.json
 **/.env.local
 **/.env.development
 **/.env.production
-**/vite.config.ts
 **/.output/
 
 # VS Code & OS
