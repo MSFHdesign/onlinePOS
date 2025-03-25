@@ -3,62 +3,64 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        return Product::orderBy('sort_order')->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $product = Product::create($request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'vat' => 'required|numeric',
+            'tag_name' => 'nullable|string',
+            'tag_color' => 'nullable|string',
+            'sort_order' => 'nullable|integer',
+        ]));
+
+        return response()->json($product, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function show(Product $product)
     {
-        //
+        return $product;
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $product->update($request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'vat' => 'required|numeric',
+            'tag_name' => 'nullable|string',
+            'tag_color' => 'nullable|string',
+            'sort_order' => 'nullable|integer',
+        ]));
+
+        return $product;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return response()->noContent();
+    }
+
+    // Drag and drop sortering
+    public function sort(Request $request)
+    {
+        foreach ($request->input('order') as $index => $id) {
+            Product::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json(['message' => 'Sortering opdateret']);
     }
 }
