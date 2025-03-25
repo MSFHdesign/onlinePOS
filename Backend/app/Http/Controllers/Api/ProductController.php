@@ -5,12 +5,24 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        return Product::orderBy('sort_order')->get();
+        try {
+            Log::info('ProductController@index kaldt');
+            $products = Product::orderBy('sort_order')->get();
+            return response()->json($products);
+        } catch (\Exception $e) {
+            Log::error('Fejl i ProductController@index: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Der opstod en serverfejl.',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -54,7 +66,6 @@ class ProductController extends Controller
         return response()->noContent();
     }
 
-    // Drag and drop sortering
     public function sort(Request $request)
     {
         foreach ($request->input('order') as $index => $id) {
