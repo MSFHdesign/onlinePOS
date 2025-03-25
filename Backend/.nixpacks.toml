@@ -1,8 +1,8 @@
-[phases.setup]
-nixPkgs = ["php82", "composer", "mysql"]
+[setup]
+packages = ["php82", "composer"]
 
-[phases.build]
+[build]
 cmds = ["composer install --no-interaction --prefer-dist"]
 
-[phases.start]
+[start]
 cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
