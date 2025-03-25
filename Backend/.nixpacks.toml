@@ -1,8 +1,11 @@
 [setup]
-packages = ["php81", "composer"]
+packages = ["php82", "php82Extensions.mbstring", "php82Extensions.pdo_mysql", "nginx", "composer"]
 
 [build]
-cmds = ["composer install --no-interaction --prefer-dist"]
+cmds = [
+  "composer install --no-interaction --prefer-dist --optimize-autoloader",
+  "php artisan config:cache"
+]
 
 [start]
-cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php-fpm -y /etc/php-fpm.conf & nginx -c /etc/nginx/nginx.conf"
