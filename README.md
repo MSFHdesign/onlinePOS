@@ -18,15 +18,15 @@ Dette projekt er mit svar på test casen fra OnlinePOS og løses over en periode
 
 ### Planlagt dagsorden
 
-| Dag | Fokusområde                                                      |
-| --- | ---------------------------------------------------------------- |
-| 1   | Opsætning af Laravel-projekt og database + VUE                   |
-| 2   | Live-deploy frontend & backend                                   |
-| 3   | Frontend: Opbygning af routes. tilføjelse af CRUD, drag and drop |
-| 4   |                                                                  |
-| 5   |                                                                  |
-| 6   |                                                                  |
-| 7   |                                                                  |
+| Dag | Fokusområde                                                                               |
+| --- | ----------------------------------------------------------------------------------------- |
+| 1   | Opsætning af Laravel-projekt og database + VUE                                            |
+| 2   | Live-deploy frontend & backend                                                            |
+| 3   | Frontend: Opbygning af routes. tilføjelse af CRUD, drag and drop move a lot to composable |
+| 4   |                                                                                           |
+| 5   |                                                                                           |
+| 6   |                                                                                           |
+| 7   |                                                                                           |
 
 ### 🛠 Teknologistak
 
