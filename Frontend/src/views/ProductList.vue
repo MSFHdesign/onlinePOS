@@ -18,11 +18,11 @@
           <span :style="{ backgroundColor: data.tag_color }" class="inline-block w-6 h-6 rounded-full" />
         </template>
       </Column>
-      <Column header="Handlinger">
+      <Column header="Handlinger" :style="{ width: '220px' }">
         <template #body="{ data }">
           <div class="flex gap-2">
-            <Button icon="pi pi-pencil" class="p-button-sm p-button-info" @click="editProduct(data)" />
-            <Button icon="pi pi-trash" class="p-button-sm p-button-danger" @click="confirmDelete(data)" />
+            <Button icon="pi pi-pencil" label="Rediger" class="p-button-sm p-button-info" @click="editProduct(data)" />
+            <Button icon="pi pi-trash" label="Slet" class="p-button-sm p-button-danger" @click="confirmDelete(data)" />
           </div>
         </template>
       </Column>
