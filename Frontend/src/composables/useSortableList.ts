@@ -13,19 +13,20 @@
 </draggable>
 
      */
-import axios from 'axios'
 import { ref } from 'vue'
+import { useApi } from '@/composables/useApi'
 
 export function useSortableList<T extends { id: number }>(
   endpoint: string,
   initialList: T[] = []
 ) {
   const items = ref<T[]>([...initialList])
+  const { post } = useApi()
 
   const updateOrder = async () => {
     const order = items.value.map((item) => item.id)
     try {
-      await axios.post(endpoint, { order })
+      await post(endpoint, { order })
     } catch (err) {
       console.error('Fejl ved opdatering af rækkefølge:', err)
     }

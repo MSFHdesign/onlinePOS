@@ -73,22 +73,25 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import axios from 'axios'
 import { useRouter } from 'vue-router'
 import type { Product } from '@/types/Product'
 import { useSortableList } from '@/composables/useSortableList'
 import draggable from 'vuedraggable'
+import { useApi } from '@/composables/useApi'
+
+const { get } = useApi()
+
 
 const router = useRouter()
 
-const { items, updateOrder } = useSortableList<Product>('/api/products/sort')
+const { items, updateOrder } = useSortableList<Product>('/products/sort')
 
 const fetchProducts = async () => {
   try {
-    const res = await axios.get('/api/products')
-    items.value = res.data
-  } catch (error) {
-    console.error('Fejl ved hentning:', error)
+    const res = await get('/products')
+    items.value = res // brug items direkte
+  } catch (err) {
+    console.error('Fejl ved hentning:', err)
   }
 }
 

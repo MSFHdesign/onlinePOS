@@ -93,18 +93,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import ProgressSpinner from 'primevue/progressspinner'
+import type { Product } from '@/types/Product'
+import { useApi } from '@/composables/useApi'
 
-interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  price: string | number;
-  vat: string | number;
-  tag_name: string | null;
-  tag_color: string | null;
-  sort_order: number;
-}
-
+const { get } = useApi()
 const router = useRouter()
 const route = useRoute()
 const product = ref<Product | null>(null)
@@ -114,10 +106,11 @@ const error = ref<string | null>(null)
 const fetchProduct = async () => {
   loading.value = true
   error.value = null
+
   try {
     const productId = route.params.id
-    const response = await axios.get(`/api/products/${productId}`)
-    product.value = response.data
+    const data = await get(`/products/${productId}`)
+    product.value = data
   } catch (err) {
     console.error('Fejl ved hentning af produkt:', err)
     error.value = 'Der opstod en fejl ved hentning af produktet. Prøv igen senere.'
