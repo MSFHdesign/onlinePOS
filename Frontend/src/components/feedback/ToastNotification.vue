@@ -31,4 +31,35 @@ const showNotification = (
 
 // Provide the notification function to all child components
 provide('showNotification', showNotification);
-</script> 
+</script>
+
+<style scoped>
+/* Toast dark mode improvements */
+:deep(.p-toast-message) {
+  @apply dark:text-white;
+}
+
+:deep(.p-toast-message-success) {
+  @apply dark:text-green-100;
+}
+
+:deep(.p-toast-message-info) {
+  @apply dark:text-blue-100;
+}
+
+:deep(.p-toast-message-warn) {
+  @apply dark:text-yellow-100;
+}
+
+:deep(.p-toast-message-error) {
+  @apply dark:text-red-100;
+}
+
+:deep(.p-toast-icon) {
+  @apply dark:text-white;
+}
+
+:deep(.p-toast-message-content .p-toast-detail) {
+  @apply dark:text-gray-300;
+}
+</style> 

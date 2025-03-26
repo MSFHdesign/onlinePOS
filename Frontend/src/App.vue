@@ -75,6 +75,43 @@ import ThemeToggler from './components/theme/ThemeToggler.vue';
   focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:outline-none;
 }
 
+/* Override PrimeVue default text color for dark mode inputs */
+.dark .p-inputtext, 
+.dark .p-textarea, 
+.dark .p-inputnumber-input {
+  color: white !important;
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+/* Direct style to ensure inputs are visible */
+.dark input, 
+.dark textarea, 
+.dark select,
+.dark .p-inputtext, 
+.dark .p-inputnumber input,
+.dark .p-inputnumber-input {
+  color: white !important;
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+/* Even more specific selector for InputNumber */
+.dark .p-inputnumber .p-component.p-inputtext,
+.dark input.p-inputtext.p-component {
+  color: white !important;
+  background-color: #1e293b !important;
+}
+
+/* Add placeholder styling for all inputs */
+::placeholder {
+  @apply text-gray-400 dark:text-gray-500;
+}
+
+.p-inputtext.p-invalid, .p-textarea.p-invalid, .p-inputnumber.p-invalid .p-inputnumber-input {
+  @apply border-red-500 dark:border-red-400;
+}
+
 .p-card {
   @apply bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md;
 }
@@ -173,5 +210,60 @@ import ThemeToggler from './components/theme/ThemeToggler.vue';
 
 .p-breadcrumb ul li:last-child .p-menuitem-link {
   @apply text-gray-900 dark:text-gray-200 font-medium;
+}
+
+/* Add ColorPicker specific styling */
+.p-colorpicker {
+  position: relative;
+  display: inline-block;
+}
+
+.p-colorpicker-preview {
+  cursor: pointer;
+}
+
+.dark .p-colorpicker-overlay {
+  background-color: #1e293b !important;
+  color: white !important;
+}
+
+.p-colorpicker-panel {
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dark .p-colorpicker-panel {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+.p-component-overlay-enter {
+  animation: overlay-enter 150ms forwards;
+}
+
+.p-component-overlay-leave {
+  animation: overlay-leave 150ms forwards;
+}
+
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-leave {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 </style>

@@ -60,7 +60,7 @@ const goBack = () => {
 const createProduct = async (productData: ProductFormData) => {
   try {
     loading.value = true;
-    const response = await axios.post('/api/products', productData);
+    await axios.post('/api/products', productData);
     
     if (showNotification) {
       showNotification(
@@ -70,7 +70,10 @@ const createProduct = async (productData: ProductFormData) => {
       );
     }
     
-    router.push('/');
+    // Small delay to ensure notification displays before navigation
+    setTimeout(() => {
+      router.push('/');
+    }, 300);
   } catch (error: any) {
     console.error('Fejl ved oprettelse:', error);
     

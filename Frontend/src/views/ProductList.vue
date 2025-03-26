@@ -7,15 +7,32 @@
       </RouterLink>
     </div>
 
-    <DataTable :value="products" class="w-full">
+    <DataTable :value="products" class="w-full" stripedRows>
       <Column field="name" header="Navn" />
       <Column field="description" header="Beskrivelse" />
-      <Column field="price" header="Pris" />
-      <Column field="vat" header="Moms" />
+      <Column header="Pris">
+        <template #body="{ data }">
+          {{ formatPrice(data.price) }} kr.
+        </template>
+      </Column>
+      <Column header="Moms">
+        <template #body="{ data }">
+          {{ parseFloat(data.vat) }}%
+        </template>
+      </Column>
+      <Column header="Pris inkl. moms">
+        <template #body="{ data }">
+          {{ formatPrice(calculatePriceWithVat(data.price, data.vat)) }} kr.
+        </template>
+      </Column>
       <Column field="tag_name" header="Tag" />
       <Column field="tag_color" header="Farve">
         <template #body="{ data }">
-          <span :style="{ backgroundColor: data.tag_color }" class="inline-block w-6 h-6 rounded-full" />
+          <span 
+            :style="{ backgroundColor: data.tag_color }" 
+            class="inline-block w-6 h-6 rounded-full"
+            :title="data.tag_color" 
+          />
         </template>
       </Column>
       <Column header="Handlinger" :style="{ width: '220px' }">
@@ -50,8 +67,8 @@ interface Product {
   id: number;
   name: string;
   description: string | null;
-  price: number;
-  vat: number;
+  price: string | number;
+  vat: string | number;
   tag_name: string | null;
   tag_color: string | null;
   sort_order: number;
@@ -69,6 +86,21 @@ const fetchProducts = async () => {
   } catch (error) {
     console.error('Fejl ved hentning:', error)
   }
+}
+
+// Format price for display with Danish formatting
+const formatPrice = (price: string | number): string => {
+  // Convert string to number if needed
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+  return numPrice.toFixed(2).replace('.', ',')
+}
+
+// Calculate price with VAT
+const calculatePriceWithVat = (price: string | number, vat: string | number): number => {
+  // Convert strings to numbers if needed
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+  const numVat = typeof vat === 'string' ? parseFloat(vat) : vat
+  return numPrice * (1 + numVat / 100)
 }
 
 const editProduct = (product: Product) => {
@@ -94,3 +126,18 @@ const deleteProduct = async () => {
 
 onMounted(fetchProducts)
 </script>
+
+<style scoped>
+/* Add any component-specific styles here */
+.p-datatable .p-datatable-thead > tr > th {
+  @apply font-semibold bg-gray-50 dark:bg-slate-700;
+}
+
+.p-datatable .p-datatable-tbody > tr.p-datatable-row-odd {
+  @apply bg-gray-50 dark:bg-slate-700/50;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  @apply bg-gray-100 dark:bg-slate-600;
+}
+</style>

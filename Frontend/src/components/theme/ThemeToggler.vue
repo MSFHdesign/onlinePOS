@@ -53,6 +53,11 @@ const applyTheme = () => {
   } else {
     document.documentElement.classList.remove('dark');
   }
+  
+  // Dispatch a custom event that components can listen for
+  document.dispatchEvent(new CustomEvent('themeChanged', {
+    detail: { isDarkMode: isDarkMode.value }
+  }));
 };
 
 // Toggle between light and dark
