@@ -1,66 +1,96 @@
 <template>
-  <div class="p-4 max-w-xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">Opret Produkt</h2>
-    <form @submit.prevent="submitForm" class="space-y-4">
-      <div>
-        <label class="block mb-1">Navn</label>
-        <input v-model="product.name" type="text" class="p-inputtext w-full" required />
+  <div class="p-4 max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-4">
+      <Breadcrumb :model="breadcrumbItems" class="mb-3" />
+      <div class="flex align-items-center justify-content-between">
+        <h1 class="text-3xl font-bold m-0">
+          <i class="pi pi-plus-circle mr-2 text-primary-light dark:text-primary-dark"></i>
+          Opret Nyt Produkt
+        </h1>
+        <Button icon="pi pi-arrow-left" label="Tilbage" outlined @click="goBack" />
       </div>
-
-      <div>
-        <label class="block mb-1">Beskrivelse</label>
-        <textarea v-model="product.description" class="p-inputtext w-full" />
-      </div>
-
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <label class="block mb-1">Pris</label>
-          <input v-model.number="product.price" type="number" class="p-inputtext w-full" required />
-        </div>
-        <div class="flex-1">
-          <label class="block mb-1">Moms</label>
-          <input v-model.number="product.vat" type="number" class="p-inputtext w-full" required />
-        </div>
-      </div>
-
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <label class="block mb-1">Tag Navn</label>
-          <input v-model="product.tag_name" type="text" class="p-inputtext w-full" />
-        </div>
-        <div class="flex-1">
-          <label class="block mb-1">Tag Farve</label>
-          <input v-model="product.tag_color" type="color" class="p-inputtext w-full" />
-        </div>
-      </div>
-
-      <Button type="submit" label="Gem produkt" />
-    </form>
+    </div>
+    
+    <!-- Toast for notifications -->
+    <ToastNotification />
+    
+    <!-- Main Form Section --> 
+    <div class="mt-4">
+      <ProductForm
+        title="Produkt Information"
+        submitLabel="Gem Produkt"
+        :loading="loading"
+        @submit="createProduct"
+        @cancel="goBack"
+      />
+    </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
+<script setup lang="ts">
+import { ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+import Breadcrumb from 'primevue/breadcrumb';
+import Button from 'primevue/button';
+import ToastNotification from '@/components/feedback/ToastNotification.vue';
+import ProductForm from '@/components/product/ProductForm.vue';
+import type { ProductFormData } from '@/types/Product';
 
-const router = useRouter()
+const router = useRouter();
+const loading = ref(false);
 
-const product = ref({
-  name: '',
-  description: '',
-  price: 0,
-  vat: 0,
-  tag_name: '',
-  tag_color: '#000000',
-})
+// Get the notification function from the provider
+const showNotification = inject<any>('showNotification');
 
-const submitForm = async () => {
+// Setup breadcrumb navigation
+const breadcrumbItems = [
+  { label: 'Hjem', to: '/' },
+  { label: 'Produkter', to: '/' },
+  { label: 'Opret produkt' }
+];
+
+// Navigation back to product list
+const goBack = () => {
+  router.push('/');
+};
+
+// Create new product
+const createProduct = async (productData: ProductFormData) => {
   try {
-    await axios.post('/api/products', product.value)
-    router.push('/')
-  } catch (error) {
-    console.error('Fejl ved oprettelse:', error)
+    loading.value = true;
+    await axios.post('/api/products', productData);
+    
+    if (showNotification) {
+      showNotification(
+        'success',
+        'Produkt Oprettet',
+        `${productData.name} er blevet oprettet succesfuldt.`
+      );
+    }
+    
+    // Small delay to ensure notification displays before navigation
+    setTimeout(() => {
+      router.push('/');
+    }, 300);
+  } catch (error: any) {
+    console.error('Fejl ved oprettelse:', error);
+    
+    if (showNotification) {
+      showNotification(
+        'error',
+        'Oprettelsesfejl',
+        error.response?.data?.message || 'Der skete en fejl ved oprettelse af produktet',
+        5000
+      );
+    }
+  } finally {
+    loading.value = false;
   }
-}
+};
 </script>
+
+<style scoped>
+/* Component-specific styles */
+</style>
