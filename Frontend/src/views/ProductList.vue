@@ -1,60 +1,66 @@
 <template>
-  <div class="p-4 max-w-4xl mx-auto">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">Produkter</h2>
-      <RouterLink to="/create">
-        <Button label="Opret nyt" icon="pi pi-plus" />
-      </RouterLink>
+  <div class="p-4 max-w-5xl mx-auto">
+    <div class="mb-4 bg-white dark:bg-slate-800 rounded-lg shadow p-5">
+      <h2 class="text-lg font-bold text-gray-700 dark:text-white">Alle produkter ({{ products.length }})</h2>
     </div>
 
-    <DataTable :value="products" class="w-full" stripedRows>
-      <Column field="name" header="Navn" />
-      <Column field="description" header="Beskrivelse" />
-      <Column header="Pris">
-        <template #body="{ data }">
-          {{ formatPrice(data.price) }} kr.
-        </template>
-      </Column>
-      <Column header="Moms">
-        <template #body="{ data }">
-          {{ parseFloat(data.vat) }}%
-        </template>
-      </Column>
-      <Column header="Pris inkl. moms">
-        <template #body="{ data }">
-          {{ formatPrice(calculatePriceWithVat(data.price, data.vat)) }} kr.
-        </template>
-      </Column>
-      <Column field="tag_name" header="Tag" />
-      <Column field="tag_color" header="Farve">
-        <template #body="{ data }">
-          <span 
-            :style="{ backgroundColor: data.tag_color }" 
-            class="inline-block w-6 h-6 rounded-full"
-            :title="data.tag_color" 
-          />
-        </template>
-      </Column>
-      <Column header="Handlinger" :style="{ width: '220px' }">
-        <template #body="{ data }">
-          <div class="flex gap-2">
-            <Button icon="pi pi-pencil" label="Rediger" class="p-button-sm p-button-info" @click="editProduct(data)" />
-            <Button icon="pi pi-trash" label="Slet" class="p-button-sm p-button-danger" @click="confirmDelete(data)" />
-          </div>
-        </template>
-      </Column>
-    </DataTable>
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+      <DataTable 
+        :value="products" 
+        class="product-table w-full" 
+        stripedRows
+        :paginator="false"
+      >
+        <Column :style="{ width: '50px' }">
+          <template #body>
+            <div class="flex items-center justify-center cursor-move opacity-50">
+              <span class="pi pi-bars"></span>
+            </div>
+          </template>
+        </Column>
+        <Column field="id" header="Produkt ID" :sortable="false" :style="{ width: '120px' }" />
+        <Column field="name" header="Navn" :sortable="false" />
+        <Column field="description" header="Beskrivelse" :sortable="false" />
+        <Column header="Pris" :sortable="false" :style="{ width: '80px' }">
+          <template #body="{ data }">
+            {{ formatPrice(data.price) }}
+          </template>
+        </Column>
+        <Column header="Momssats" :sortable="false" :style="{ width: '100px' }">
+          <template #body="{ data }">
+            {{ parseFloat(data.vat) }} %
+          </template>
+        </Column>
+        <Column field="tag_name" header="Tag" :sortable="false" :style="{ width: '120px' }">
+          <template #body="{ data }">
+            <div 
+              v-if="data.tag_name" 
+              class="tag-pill" 
+              :style="{ 
+                backgroundColor: data.tag_color, 
+                color: getContrastColor(data.tag_color) 
+              }"
+            >
+              {{ data.tag_name }}
+            </div>
+            <span v-else>-</span>
+          </template>
+        </Column>
+        <Column :style="{ width: '50px' }">
+          <template #body="{ data }">
+            <RouterLink :to="`/product/${data.id}`">
+              <span class="pi pi-chevron-right text-gray-400"></span>
+            </RouterLink>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
 
-    <!-- Delete Confirmation Dialog -->
-    <Dialog v-model:visible="deleteDialogVisible" header="Bekræft sletning" :style="{ width: '450px' }" :modal="true">
-      <div class="p-4">
-        <p>Er du sikker på at du vil slette <strong>{{ selectedProduct?.name }}</strong>?</p>
-      </div>
-      <template #footer>
-        <Button label="Nej" icon="pi pi-times" class="p-button-text" @click="deleteDialogVisible = false" />
-        <Button label="Ja" icon="pi pi-check" class="p-button-danger" @click="deleteProduct" />
-      </template>
-    </Dialog>
+    <div class="flex justify-end mt-4">
+      <RouterLink to="/create">
+        <Button label="Opret nyt produkt" icon="pi pi-plus" class="p-button-success" />
+      </RouterLink>
+    </div>
   </div>
 </template>
 
@@ -76,8 +82,6 @@ interface Product {
 
 const router = useRouter()
 const products = ref<Product[]>([])
-const deleteDialogVisible = ref(false)
-const selectedProduct = ref<Product | null>(null)
 
 const fetchProducts = async () => {
   try {
@@ -103,41 +107,81 @@ const calculatePriceWithVat = (price: string | number, vat: string | number): nu
   return numPrice * (1 + numVat / 100)
 }
 
-const editProduct = (product: Product) => {
-  router.push(`/edit/${product.id}`)
-}
-
-const confirmDelete = (product: Product) => {
-  selectedProduct.value = product
-  deleteDialogVisible.value = true
-}
-
-const deleteProduct = async () => {
-  try {
-    if (selectedProduct.value) {
-      await axios.delete(`/api/products/${selectedProduct.value.id}`)
-      deleteDialogVisible.value = false
-      fetchProducts() // Refresh the list after deletion
-    }
-  } catch (error) {
-    console.error('Fejl ved sletning:', error)
-  }
+// Calculate contrast color for text based on background color
+const getContrastColor = (hexColor: string | null): string => {
+  if (!hexColor) return '#000000' // Default to black
+  
+  // Remove the # if present
+  const hex = hexColor.replace('#', '')
+  
+  // Convert hex to RGB
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  
+  return luminance > 0.5 ? '#000000' : '#FFFFFF' // Use black for light backgrounds, white for dark
 }
 
 onMounted(fetchProducts)
 </script>
 
 <style scoped>
-/* Add any component-specific styles here */
-.p-datatable .p-datatable-thead > tr > th {
-  @apply font-semibold bg-gray-50 dark:bg-slate-700;
+.product-table {
+  @apply border-collapse;
 }
 
-.p-datatable .p-datatable-tbody > tr.p-datatable-row-odd {
-  @apply bg-gray-50 dark:bg-slate-700/50;
+.product-table .p-datatable-thead > tr > th {
+  @apply font-medium text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 px-4 py-2.5 border-b-2 border-gray-200;
 }
 
-.p-datatable .p-datatable-tbody > tr:hover {
-  @apply bg-gray-100 dark:bg-slate-600;
+.product-table .p-datatable-tbody > tr > td {
+  @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700;
+}
+
+.product-table .p-datatable-tbody > tr:last-child > td {
+  @apply border-b-0;
+}
+
+.product-table .p-datatable-tbody > tr:hover {
+  @apply bg-gray-50 dark:bg-slate-700;
+}
+
+/* Tag styling */
+.tag-pill {
+  @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+/* Reset PrimeVue table styling */
+:deep(.p-datatable-wrapper) {
+  @apply border-none;
+}
+
+:deep(.p-datatable-table) {
+  @apply border-collapse;
+}
+
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+  @apply border-0 border-b border-gray-100;
+}
+
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+  @apply border-0 border-b-2 border-gray-200;
+}
+
+/* Adjust hover states to match design */
+.pi-chevron-right {
+  @apply transition-colors;
+}
+
+.pi-chevron-right:hover {
+  @apply text-blue-500;
+}
+
+/* Ensure clean spacing between rows */
+:deep(.p-datatable .p-datatable-tbody > tr) {
+  height: 50px;
 }
 </style>
