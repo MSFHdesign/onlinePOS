@@ -9,6 +9,12 @@
         <RouterLink :to="`/edit/${product?.id}`">
           <Button icon="pi pi-pencil" label="Rediger" class="p-button-info" />
         </RouterLink>
+         <Button 
+    icon="pi pi-trash" 
+    label="Slet" 
+    class="p-button-danger" 
+    @click="deleteProduct" 
+  />
       </div>
     </div>
 
@@ -91,12 +97,11 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
 import ProgressSpinner from 'primevue/progressspinner'
 import type { Product } from '@/types/Product'
 import { useApi } from '@/composables/useApi'
 
-const { get } = useApi()
+const { get, del } = useApi()
 const router = useRouter()
 const route = useRoute()
 const product = ref<Product | null>(null)
@@ -118,7 +123,19 @@ const fetchProduct = async () => {
     loading.value = false
   }
 }
+const deleteProduct = async () => {
+  const confirmDelete = confirm('Er du sikker på, at du vil slette dette produkt?')
 
+  if (!confirmDelete || !product.value?.id) return
+
+  try {
+    await del(`/products/${product.value.id}`)
+    router.push('/')
+  } catch (err) {
+    console.error('Fejl ved sletning:', err)
+    alert('Kunne ikke slette produktet. Prøv igen senere.')
+  }
+}
 // Format price for display with Danish formatting
 const formatPrice = (price: string | number): string => {
   // Convert string to number if needed
