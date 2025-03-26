@@ -43,12 +43,14 @@ import Button from 'primevue/button';
 import ToastNotification from '@/components/feedback/ToastNotification.vue';
 import ProductForm from '@/components/product/ProductForm.vue';
 import type { ProductFormData } from '@/types/Product';
+import { useApi } from '@/composables/useApi'
 
 const router = useRouter();
 const route = useRoute();
 const productId = route.params.id as string;
 const loading = ref(true);
 const saving = ref(false);
+const { get,put } = useApi()
 
 // Get the notification function from the provider
 const showNotification = inject<any>('showNotification');
@@ -74,24 +76,24 @@ const product = ref<ProductFormData>({
   tag_name: '',
   tag_color: '#6466f1',
 });
+
 const fetchProduct = async () => {
   try {
     loading.value = true;
-    const res = await axios.get(`/api/products/${productId}`);
-    console.log('Produkt response:', res.data);
+    const data = await get(`/products/${productId}`); 
 
-    const data = res.data;
+    console.log('Produkt response:', data)
 
     product.value = {
       name: data.name,
       description: data.description ?? '',
-      price: parseFloat(data.price), // 👈 vigtigt!
-      vat: parseFloat(data.vat),     // 👈 vigtigt!
+      price: parseFloat(data.price), 
+      vat: parseFloat(data.vat),     
       tag_name: data.tag_name ?? '',
       tag_color: data.tag_color ?? '#6466f1'
     };
   } catch (error: any) {
-    console.error('Fejl ved hentning af produkt:', error);
+    console.error('Fejl ved hentning af produkt:', error)
 
     if (showNotification) {
       showNotification(
@@ -112,8 +114,9 @@ const fetchProduct = async () => {
 const submitForm = async (productData: ProductFormData) => {
   try {
     saving.value = true;
-    await axios.put(`/api/products/${productId}`, productData);
-    
+
+    await put(`/products/${productId}`, productData); // Fjern /api
+
     if (showNotification) {
       showNotification(
         'success',
@@ -122,11 +125,11 @@ const submitForm = async (productData: ProductFormData) => {
         3000
       );
     }
-    
+
     router.push('/');
   } catch (error: any) {
     console.error('Fejl ved opdatering:', error);
-    
+
     if (showNotification) {
       showNotification(
         'error',

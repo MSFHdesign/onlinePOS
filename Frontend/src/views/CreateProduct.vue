@@ -21,74 +21,66 @@
         title="Produkt Information"
         submitLabel="Gem Produkt"
         :loading="loading"
-        @submit="createProduct"
+        @submit="handleSubmit"
         @cancel="goBack"
       />
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref, inject } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-import Breadcrumb from 'primevue/breadcrumb';
-import Button from 'primevue/button';
-import ToastNotification from '@/components/feedback/ToastNotification.vue';
-import ProductForm from '@/components/product/ProductForm.vue';
-import type { ProductFormData } from '@/types/Product';
+import { inject } from 'vue'
+import { useRouter } from 'vue-router'
+import Breadcrumb from 'primevue/breadcrumb'
+import Button from 'primevue/button'
+import ToastNotification from '@/components/feedback/ToastNotification.vue'
+import ProductForm from '@/components/product/ProductForm.vue'
+import type { ProductFormData } from '@/types/Product'
+import { useProduct } from '@/composables/useProduct'
 
-const router = useRouter();
-const loading = ref(false);
+const router = useRouter()
+const showNotification = inject<any>('showNotification')
 
-// Get the notification function from the provider
-const showNotification = inject<any>('showNotification');
+// Brug composable i stedet for axios direkte
+const { createProduct, loading } = useProduct()
 
-// Setup breadcrumb navigation
 const breadcrumbItems = [
   { label: 'Hjem', to: '/' },
   { label: 'Produkter', to: '/' },
   { label: 'Opret produkt' }
-];
+]
 
-// Navigation back to product list
 const goBack = () => {
-  router.push('/');
-};
+  router.push('/')
+}
 
-// Create new product
-const createProduct = async (productData: ProductFormData) => {
+const handleSubmit = async (productData: ProductFormData) => {
   try {
-    loading.value = true;
-    await axios.post('/api/products', productData);
-    
+    await createProduct(productData)
+
     if (showNotification) {
       showNotification(
         'success',
         'Produkt Oprettet',
         `${productData.name} er blevet oprettet succesfuldt.`
-      );
+      )
     }
-    
-    // Small delay to ensure notification displays before navigation
+
     setTimeout(() => {
-      router.push('/');
-    }, 300);
+      router.push('/')
+    }, 300)
   } catch (error: any) {
-    console.error('Fejl ved oprettelse:', error);
-    
+    console.error('Fejl ved oprettelse:', error)
+
     if (showNotification) {
       showNotification(
         'error',
         'Oprettelsesfejl',
         error.response?.data?.message || 'Der skete en fejl ved oprettelse af produktet',
         5000
-      );
+      )
     }
-  } finally {
-    loading.value = false;
   }
-};
+}
 </script>
 
 <style scoped>
