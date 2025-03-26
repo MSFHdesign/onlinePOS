@@ -186,10 +186,8 @@ const defaultFormData: ProductFormData = {
 };
 
 // Initialize form data with provided data or defaults
-const formData = reactive<ProductFormData>({
-  ...defaultFormData,
-  ...props.initialData
-});
+const formData = reactive({ ...defaultFormData, ...props.initialData }) as Record<keyof ProductFormData, any>;
+
 
 // Price mode - controls whether we display price with or without VAT
 const priceMode = ref<'withVat' | 'withoutVat'>('withoutVat');
@@ -246,11 +244,18 @@ const formatPrice = (price: number): string => {
 };
 
 // Watch for initial data changes (useful for editing scenarios)
-watch(() => props.initialData, (newData) => {
-  if (newData) {
-    Object.assign(formData, newData);
-  }
-}, { deep: true });
+watch(
+  () => props.initialData,
+  (newData) => {
+    if (newData) {
+      (Object.keys(newData) as Array<keyof ProductFormData>).forEach((key) => {
+        formData[key] = newData[key];
+      });
+    }
+  },
+  { immediate: true }
+);
+
 
 // Validate the form
 const validateForm = (): boolean => {

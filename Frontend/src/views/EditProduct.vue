@@ -21,15 +21,15 @@
         <i class="pi pi-spin pi-spinner text-4xl text-primary-light dark:text-primary-dark"></i>
         <p class="mt-2">Indlæser produkt...</p>
       </div>
-      <ProductForm
-        v-else
-        title="Rediger Produkt Information"
-        submitLabel="Gem Ændringer"
-        :loading="saving"
-        :initialData="product"
-        @submit="submitForm"
-        @cancel="goBack"
-      />
+     <ProductForm
+  v-else
+  title="Rediger Produkt Information"
+  submitLabel="Gem Ændringer"
+  :loading="saving"
+  :initialData="product"
+  @submit="submitForm"
+  @cancel="goBack"
+/>
     </div>
   </div>
 </template>
@@ -74,15 +74,25 @@ const product = ref<ProductFormData>({
   tag_name: '',
   tag_color: '#6466f1',
 });
-
 const fetchProduct = async () => {
   try {
     loading.value = true;
     const res = await axios.get(`/api/products/${productId}`);
-    product.value = res.data;
+    console.log('Produkt response:', res.data);
+
+    const data = res.data;
+
+    product.value = {
+      name: data.name,
+      description: data.description ?? '',
+      price: parseFloat(data.price), // 👈 vigtigt!
+      vat: parseFloat(data.vat),     // 👈 vigtigt!
+      tag_name: data.tag_name ?? '',
+      tag_color: data.tag_color ?? '#6466f1'
+    };
   } catch (error: any) {
     console.error('Fejl ved hentning af produkt:', error);
-    
+
     if (showNotification) {
       showNotification(
         'error',
@@ -91,12 +101,13 @@ const fetchProduct = async () => {
         5000
       );
     }
-    
+
     router.push('/');
   } finally {
     loading.value = false;
   }
 };
+
 
 const submitForm = async (productData: ProductFormData) => {
   try {
