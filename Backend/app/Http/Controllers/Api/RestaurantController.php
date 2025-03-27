@@ -21,7 +21,7 @@ class RestaurantController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
-            'opening_hours' => 'nullable|json',
+            'opening_hours' => 'nullable|array',
         ]);
 
         return Restaurant::create($data);
@@ -39,7 +39,7 @@ class RestaurantController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
-            'opening_hours' => 'nullable|json',
+            'opening_hours' => 'nullable|array',
         ]);
 
         $restaurant->update($data);
