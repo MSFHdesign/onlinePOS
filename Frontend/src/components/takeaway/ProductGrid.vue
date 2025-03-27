@@ -1,72 +1,25 @@
 <template>
   <div class="flex flex-col h-full">
-    <!-- Search & Sort Controls -->
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="relative flex-1 max-w-md">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
-          <i class="pi" :class="isSearching ? 'pi-spin pi-spinner' : 'pi-search'"></i>
-        </span>
-        <input
-          type="text"
-          placeholder="Søg efter produkter..."
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100
-                 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-primary-light dark:focus:border-primary-dark"
-          v-model="searchQuery"
-        />
-      </div>
-      
-      <div class="flex items-center space-x-2">
-        <label class="text-sm text-gray-600 dark:text-gray-300">Sortér efter:</label>
-        <select 
-          v-model="sortBy"
-          class="border border-gray-300 dark:border-gray-600 rounded-md 
-                 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100
-                 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-primary-light dark:focus:border-primary-dark
-                 px-3 py-2"
-        >
-          <option value="name">Navn</option>
-          <option value="price_asc">Pris (lav til høj)</option>
-          <option value="price_desc">Pris (høj til lav)</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- Product Filter Results Status -->
-    <div v-if="searchQuery.trim() || props.selectedCategory !== 'all'" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-      <span v-if="filteredProducts.length > 0" class="animate-fade-in">
-        Viser {{ filteredProducts.length }} {{ filteredProducts.length === 1 ? 'produkt' : 'produkter' }}
-        {{ props.selectedCategory !== 'all' ? `i kategorien "${props.selectedCategory}"` : '' }}
-        {{ searchQuery.trim() ? `med søgeordet "${searchQuery}"` : '' }}
-      </span>
-      <button 
-        @click="clearFilters" 
-        class="ml-2 text-indigo-600 dark:text-indigo-400 hover:underline"
-      >
-        <i class="pi pi-times-circle mr-1"></i>Ryd filter
-      </button>
-    </div>
-    
-    <!-- Product Grid Container with fixed height -->
-    <div class="product-grid-container relative flex-grow">
-      <!-- Loading State with Skeleton - Absolute positioning to not affect layout -->
-      <div v-if="isSearching" class="absolute inset-0 z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-        <div v-for="n in 6" :key="n" class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md h-[380px]">
-          <div class="h-48 bg-gray-200 dark:bg-slate-700"></div>
-          <div class="p-4">
-            <div class="h-6 bg-gray-200 dark:bg-slate-700 rounded w-3/4 mb-3"></div>
-            <div class="h-4 bg-gray-200 dark:bg-slate-700 rounded w-full mb-2"></div>
-            <div class="h-4 bg-gray-200 dark:bg-slate-700 rounded w-2/3 mb-6"></div>
-            <div class="flex justify-between items-center">
-              <div class="h-6 bg-gray-200 dark:bg-slate-700 rounded w-1/4"></div>
-              <div class="h-8 w-8 bg-gray-200 dark:bg-slate-700 rounded-full"></div>
+    <!-- Product Grid Container -->
+    <div class="product-grid-container relative">
+      <!-- Loading State with Skeleton -->
+      <div v-if="isSearching" class="absolute inset-0 z-10 grid-skeleton animate-pulse">
+        <div v-for="n in 6" :key="n" class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-description"></div>
+            <div class="skeleton-description-short"></div>
+            <div class="skeleton-action">
+              <div class="skeleton-price"></div>
+              <div class="skeleton-button"></div>
             </div>
           </div>
         </div>
       </div>
       
       <!-- No Results Message - Absolute positioning to not affect layout -->
-      <div v-if="!isSearching && filteredProducts.length === 0" class="absolute inset-0 z-10 py-16 text-center animate-fade-in flex flex-col items-center justify-center">
+      <div v-if="!isSearching && filteredProducts.length === 0" class="absolute inset-0 z-10 empty-state flex flex-col items-center justify-center">
         <i class="pi pi-inbox text-5xl text-gray-300 dark:text-gray-600 mb-4"></i>
         <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">Ingen produkter fundet</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-4">
@@ -80,20 +33,20 @@
         </button>
       </div>
       
-      <!-- Product Grid with consistent sizing - Always rendered but hidden when needed -->
+      <!-- Product Grid -->
       <div 
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in h-full"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in"
         :class="{ 'opacity-0': isSearching || filteredProducts.length === 0 }"
       >
-        <!-- Empty placeholder cards when no results to maintain grid height -->
+        <!-- Empty placeholder cards when no results -->
         <template v-if="filteredProducts.length === 0">
-          <div v-for="n in 6" :key="`empty-${n}`" class="h-full invisible">
-            <div class="h-full opacity-0"></div>
+          <div v-for="n in 6" :key="`empty-${n}`" class="grid-item invisible">
+            <div class="opacity-0" style="height: 380px;"></div>
           </div>
         </template>
         
         <!-- Actual products -->
-        <div v-else v-for="product in filteredProducts" :key="product.id" class="h-full product-item">
+        <div v-else v-for="product in filteredProducts" :key="product.id" class="grid-item">
           <ProductCard 
             :product="product"
             @add-to-cart="$emit('add-to-cart', product)"
@@ -112,20 +65,21 @@ import type { Product } from '@/types/Product';
 const props = defineProps<{
   products: Product[];
   selectedCategory: string;
+  searchQuery: string;
+  sortBy: string;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'add-to-cart', product: Product): void;
+  (e: 'update:filteredCount', count: number): void;
 }>();
 
-const searchQuery = ref('');
-const sortBy = ref('name');
 const isSearching = ref(false);
 
 // Add debouncing for search to prevent UI jitter
 let searchTimeout: any = null;
 
-watch([searchQuery, sortBy], () => {
+watch([() => props.searchQuery, () => props.sortBy], () => {
   if (searchTimeout) clearTimeout(searchTimeout);
   isSearching.value = true;
   
@@ -134,22 +88,14 @@ watch([searchQuery, sortBy], () => {
   }, 500); // Slightly longer delay for better UX
 });
 
-// When category changes, we want to update immediately without loading state
-watch(() => props.selectedCategory, () => {
-  searchQuery.value = ''; // Clear search when changing categories
-});
-
 // Clear all filters and search
 const clearFilters = () => {
-  searchQuery.value = '';
   // Emit a custom event to reset category in parent
   emitCategoryReset();
 };
 
 // Function to emit the category reset event
 const emitCategoryReset = () => {
-  // This assumes your TakeAwayView is listening for this event
-  // You may need to update the parent component
   const event = new CustomEvent('reset-category', { 
     bubbles: true,
     composed: true 
@@ -166,8 +112,8 @@ const filteredProducts = computed(() => {
   }
   
   // Filter by search query
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase();
+  if (props.searchQuery.trim()) {
+    const query = props.searchQuery.toLowerCase();
     result = result.filter(product => 
       product.name.toLowerCase().includes(query) || 
       (product.description && product.description.toLowerCase().includes(query))
@@ -176,7 +122,7 @@ const filteredProducts = computed(() => {
   
   // Sort products
   result.sort((a, b) => {
-    switch (sortBy.value) {
+    switch (props.sortBy) {
       case 'name':
         return a.name.localeCompare(b.name);
       case 'price_asc':
@@ -188,27 +134,45 @@ const filteredProducts = computed(() => {
     }
   });
   
+  // Emit the filtered count to parent
+  emit('update:filteredCount', result.length);
+  
   return result;
 });
 </script>
 
 <style scoped>
 .product-grid-container {
-  transition: all 0.3s ease-in-out;
-  will-change: contents;
-  min-height: 400px; /* Ensure minimum height even when empty */
   position: relative;
-  /* Use transform for better performance */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
+  min-height: 400px;
 }
 
 .product-item {
   transition: all 0.3s ease;
-  animation: fadeIn 0.4s ease-out;
+}
+
+.grid-item {
+  min-height: 380px;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure grid-skeleton matches grid dimensions */
+.grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
   will-change: transform, opacity;
-  backface-visibility: hidden;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+  will-change: opacity;
 }
 
 @keyframes fadeIn {
@@ -227,23 +191,139 @@ const filteredProducts = computed(() => {
   to { opacity: 0; }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-  will-change: transform, opacity;
-}
-
-.animate-fade-out {
-  animation: fadeOut 0.3s ease-out forwards;
-  will-change: opacity;
-}
-
 /* Ensure fixed height grid items */
 .grid {
-  grid-template-rows: minmax(380px, 1fr);
+  grid-template-rows: minmax(380px, 380px); /* Fixed exact height */
 }
 
 /* Force hardware acceleration for smoother animations */
-.absolute, .grid, .product-item {
+.absolute, .grid, .product-item, .grid-item {
   transform: translateZ(0);
+}
+
+/* Skeleton loading styling with exact dimensions */
+.grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  grid-auto-rows: 380px;
+  gap: 1.5rem;
+  width: 100%;
+  height: 100%;
+  contain: strict;
+}
+
+@media (min-width: 640px) {
+  .grid-skeleton {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-skeleton {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.skeleton-card {
+  height: 380px; /* Exact match to ProductCard */
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .skeleton-card {
+  background-color: rgb(30, 41, 59); /* slate-800 */
+}
+
+.skeleton-image {
+  height: 192px; /* Exact match to ProductCard image */
+  background-color: rgb(229, 231, 235); /* gray-200 */
+  flex-shrink: 0;
+}
+
+.dark .skeleton-image {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+.skeleton-content {
+  height: 188px; /* Exact match to ProductCard content */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 75%;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgb(229, 231, 235); /* gray-200 */
+}
+
+.dark .skeleton-title {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+.skeleton-description, .skeleton-description-short {
+  height: 16px;
+  border-radius: 0.25rem;
+  background-color: rgb(229, 231, 235); /* gray-200 */
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-description {
+  width: 100%;
+}
+
+.skeleton-description-short {
+  width: 66%;
+}
+
+.dark .skeleton-description, .dark .skeleton-description-short {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+.skeleton-action {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 32px;
+}
+
+.skeleton-price {
+  height: 24px;
+  width: 64px;
+  border-radius: 0.25rem;
+  background-color: rgb(229, 231, 235); /* gray-200 */
+}
+
+.dark .skeleton-price {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+.skeleton-button {
+  height: 32px;
+  width: 32px;
+  border-radius: 9999px;
+  background-color: rgb(229, 231, 235); /* gray-200 */
+}
+
+.dark .skeleton-button {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+/* Empty state styling */
+.empty-state {
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  contain: strict;
+}
+
+.dark .empty-state {
+  background-color: rgba(15, 23, 42, 0.9); /* slate-900 at 90% opacity */
 }
 </style> 

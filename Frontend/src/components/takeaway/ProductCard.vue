@@ -1,7 +1,7 @@
 <template>
-  <div class="product-card bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-    <!-- Product Image - Fixed height to prevent layout shifts -->
-    <div class="h-48 bg-gray-200 dark:bg-slate-700 relative flex-shrink-0 overflow-hidden">
+  <div class="product-card bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col">
+    <!-- Product Image - Fixed absolute height -->
+    <div class="product-image bg-gray-200 dark:bg-slate-700 relative overflow-hidden">
       <img 
         v-if="product.image_url" 
         :src="product.image_url" 
@@ -23,14 +23,22 @@
       </div>
     </div>
     
-    <!-- Product Info - Strict fixed min-height ensures consistent card sizes -->
-    <div class="p-4 flex-grow flex flex-col min-h-[150px]" style="height: 200px;">
-      <h3 class="text-lg font-semibold mb-1 text-gray-800 dark:text-white truncate" :title="product.name">{{ product.name }}</h3>
-      <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-grow" :title="product.description">
-        {{ product.description || 'Ingen beskrivelse tilgængelig' }}
-      </p>
+    <!-- Product Info - Fixed absolute height -->
+    <div class="product-content p-4 flex flex-col">
+      <!-- Product Name - Fixed height -->
+      <div class="product-name-container">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white truncate" :title="product.name">{{ product.name }}</h3>
+      </div>
       
-      <div class="flex justify-between items-center mt-auto">
+      <!-- Product Description - Fixed height -->
+      <div class="product-description-container">
+        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2" :title="product.description">
+          {{ product.description || 'Ingen beskrivelse tilgængelig' }}
+        </p>
+      </div>
+      
+      <!-- Product Price & Cart Button - Fixed height -->
+      <div class="product-action-container flex justify-between items-center">
         <span class="text-lg font-bold text-gray-900 dark:text-white">{{ formatPrice(product.price) }}</span>
         <button 
           @click="addToCart(product)"
@@ -77,16 +85,54 @@ const addToCart = (product: Product) => {
 </script>
 
 <style scoped>
+/* Fixed dimensions for the entire card */
 .product-card {
+  height: 380px;
+  width: 100%;
   will-change: transform;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
   backface-visibility: hidden;
   transform: translateZ(0);
-  height: 380px; /* Enforce exact height */
+  contain: layout size style;
 }
 
 .product-card:hover {
   transform: translateY(-4px);
+}
+
+/* Fixed height for image section */
+.product-image {
+  height: 192px; /* Fixed exact height (48px * 4) */
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Fixed height for content section */
+.product-content {
+  height: 188px; /* Remaining height to make total 380px */
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  flex-grow: 0;
+  contain: content;
+}
+
+/* Fixed heights for each section within content */
+.product-name-container {
+  height: 28px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.product-description-container {
+  height: 40px; /* Fixed exact height for 2 lines */
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.product-action-container {
+  height: 40px;
+  margin-top: auto;
 }
 
 .tag-badge {
@@ -105,8 +151,7 @@ const addToCart = (product: Product) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 2.5rem; /* Ensures consistent height for description */
-  max-height: 2.5rem; /* Caps height to prevent expansion */
+  max-height: 40px; /* Exact 2 lines of text height */
 }
 
 .truncate {
