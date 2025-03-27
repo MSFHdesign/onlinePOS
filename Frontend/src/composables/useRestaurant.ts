@@ -6,7 +6,8 @@ export function useRestaurant() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const restaurant = ref<any>({
+  const defaultRestaurant = () => ({
+    id: null,
     name: '',
     address: '',
     phone: '',
@@ -22,12 +23,14 @@ export function useRestaurant() {
     }
   })
 
-  const restaurants = ref([])
+  const restaurant = ref<any>(defaultRestaurant())
+  const restaurants = ref<any[]>([])
 
   const fetchAllRestaurants = async () => {
     loading.value = true
     try {
-      restaurants.value = await get('/restaurants')
+        restaurants.value = await get('/restaurants')
+        console.log(restaurants.value)
     } catch (err) {
       error.value = 'Kunne ikke hente restauranter'
       console.error(err)
@@ -44,23 +47,9 @@ export function useRestaurant() {
       } else {
         const list = await get('/restaurants')
         if (list.length > 0) {
-          restaurant.value = list[0] // tag første hvis ID ikke er givet
+          restaurant.value = list[0]
         } else {
-          restaurant.value = {
-            name: '',
-            address: '',
-            phone: '',
-            email: '',
-            opening_hours: {
-              monday: '',
-              tuesday: '',
-              wednesday: '',
-              thursday: '',
-              friday: '',
-              saturday: '',
-              sunday: ''
-            }
-          }
+          restaurant.value = defaultRestaurant()
         }
       }
     } catch (err) {
@@ -72,15 +61,42 @@ export function useRestaurant() {
   }
 
   const createRestaurant = async (payload: any) => {
-    return post('/restaurants', payload)
+    try {
+      const created = await post('/restaurants', payload)
+      restaurant.value = created // 👈 opdater lokal state
+        return created
+        console.log("restaurant been created: "+created)
+    } catch (err) {
+      error.value = 'Kunne ikke oprette restaurant'
+      console.error(err)
+      throw err
+    }
   }
 
   const updateRestaurant = async (id: number | string, payload: any) => {
-    return put(`/restaurants/${id}`, payload)
+    try {
+      const updated = await put(`/restaurants/${id}`, payload)
+      restaurant.value = updated
+      return updated
+      console.log("restaurant been updated: "+updated)
+    } catch (err) {
+      error.value = 'Kunne ikke opdatere restaurant'
+      console.error(err)
+      throw err
+    }
   }
 
   const deleteRestaurant = async (id: number | string) => {
-    return del(`/restaurants/${id}`)
+    try {
+      await del(`/restaurants/${id}`)
+      if (restaurant.value?.id === id) {
+        restaurant.value = defaultRestaurant()
+      }
+    } catch (err) {
+      error.value = 'Kunne ikke slette restaurant'
+      console.error(err)
+      throw err
+    }
   }
 
   return {
