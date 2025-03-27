@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-bold">Produkt detaljer</h2>
       </div>
       <div class="flex gap-2">
-        <RouterLink :to="`/edit/${product?.id}`">
+        <RouterLink :to="`/admin/edit/${product?.id}`">
           <Button icon="pi pi-pencil" label="Rediger" class="p-button-info" />
         </RouterLink>
          <Button 
