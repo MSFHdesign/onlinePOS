@@ -23,7 +23,7 @@ Dette projekt er mit svar på test casen fra OnlinePOS og løses over en periode
 | 1   | Opsætning af Laravel-projekt og database + VUE                                            |
 | 2   | Live-deploy frontend & backend                                                            |
 | 3   | Frontend: Opbygning af routes. tilføjelse af CRUD, drag and drop move a lot to composable |
-| 4   | Navigation added. added page for takeAway too.                                            |
+| 4   | Navigation added. added page for takeAway too. added backend for venue info               |
 | 5   |                                                                                           |
 | 6   |                                                                                           |
 | 7   |                                                                                           |
