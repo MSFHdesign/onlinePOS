@@ -37,7 +37,6 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
 import Breadcrumb from 'primevue/breadcrumb';
 import Button from 'primevue/button';
 import ToastNotification from '@/components/feedback/ToastNotification.vue';

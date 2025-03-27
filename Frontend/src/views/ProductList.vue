@@ -7,64 +7,67 @@
     </div>
 
     <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
-      <table class="product-table w-full border-collapse">
-        <thead>
-          <tr>
-            <th style="width: 50px"></th>
-            <th style="width: 120px">Produkt ID</th>
-            <th>Navn</th>
-            <th>Beskrivelse</th>
-            <th style="width: 80px">Pris</th>
-            <th style="width: 100px">Momssats</th>
-            <th style="width: 120px">Tag</th>
-            <th style="width: 50px"></th>
-          </tr>
-        </thead>
-        <draggable
-          tag="tbody"
-          v-model="items"
-          item-key="id"
-          handle=".drag-handle"
-          @end="updateOrder"
-        >
-          <template #item="{ element }">
+      <div class="overflow-x-auto">
+        <table class="product-table w-full border-collapse min-w-[750px]">
+          <thead>
             <tr>
-              <td>
-                <div class="drag-handle flex items-center justify-center cursor-move opacity-50">
-                  <span class="pi pi-bars"></span>
-                </div>
-              </td>
-              <td>{{ element.id }}</td>
-              <td>{{ element.name }}</td>
-              <td>{{ element.description }}</td>
-              <td>{{ formatPrice(element.price) }}</td>
-              <td>{{ parseFloat(element.vat) }} %</td>
-              <td>
-                <div
-                  v-if="element.tag_name"
-                  class="tag-pill"
-                  :style="{
-                    backgroundColor: element.tag_color,
-                    color: getContrastColor(element.tag_color)
-                  }"
-                >
-                  {{ element.tag_name }}
-                </div>
-                <span v-else>-</span>
-              </td>
-              <td>
-                <RouterLink :to="`/product/${element.id}`">
-                  <span class="pi pi-chevron-right text-gray-400"></span>
-                </RouterLink>
-              </td>
+              <th class="w-12"></th>
+              <th class="w-20">ID</th>
+              <th class="w-1/5">Navn</th>
+              <th class="w-2/5">Beskrivelse</th>
+              <th class="w-20">Pris</th>
+              <th class="w-20">Moms</th>
+              <th class="w-28">Tag</th>
+              <th class="w-12"></th>
             </tr>
-          </template>
-        </draggable>
-      </table>
+          </thead>
+          <draggable
+            tag="tbody"
+            v-model="items"
+            item-key="id"
+            handle=".drag-handle"
+            @end="updateOrder"
+          >
+            <template #item="{ element }">
+              <tr>
+                <td>
+                  <div class="drag-handle flex items-center justify-center cursor-move opacity-50">
+                    <span class="pi pi-bars"></span>
+                  </div>
+                </td>
+                <td>{{ element.id }}</td>
+                <td class="truncate max-w-[150px]" :title="element.name">{{ element.name }}</td>
+                <td class="truncate max-w-[250px]" :title="element.description">{{ element.description }}</td>
+                <td>{{ formatPrice(element.price) }}</td>
+                <td>{{ parseFloat(element.vat) }} %</td>
+                <td>
+                  <div
+                    v-if="element.tag_name"
+                    class="tag-pill truncate max-w-[100px]"
+                    :style="{
+                      backgroundColor: element.tag_color,
+                      color: getContrastColor(element.tag_color)
+                    }"
+                    :title="element.tag_name"
+                  >
+                    {{ element.tag_name }}
+                  </div>
+                  <span v-else>-</span>
+                </td>
+                <td>
+                  <RouterLink :to="`/admin/product/${element.id}`">
+                    <span class="pi pi-chevron-right text-gray-400"></span>
+                  </RouterLink>
+                </td>
+              </tr>
+            </template>
+          </draggable>
+        </table>
+      </div>
     </div>
 
     <div class="flex justify-end mt-4">
-      <RouterLink to="/create">
+      <RouterLink to="/admin/create">
         <Button label="Opret nyt produkt" icon="pi pi-plus" class="p-button-success" />
       </RouterLink>
     </div>
@@ -80,8 +83,6 @@ import draggable from 'vuedraggable'
 import { useApi } from '@/composables/useApi'
 
 const { get } = useApi()
-
-
 const router = useRouter()
 
 const { items, updateOrder } = useSortableList<Product>('/products/sort')
@@ -144,5 +145,9 @@ onMounted(fetchProducts)
 
 .drag-handle {
   @apply cursor-move;
+}
+
+.truncate {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
 }
 </style>
