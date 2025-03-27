@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->json('opening_hours')->nullable();
+            // $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Til fremtiden
             $table->timestamps();
         });
     }

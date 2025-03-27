@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Api/RestaurantController.php
 
 namespace App\Http\Controllers\Api;
 
@@ -15,44 +16,39 @@ class RestaurantController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'address' => 'required|string',
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'opening_hours' => 'nullable|json',
         ]);
 
-        $restaurant = Restaurant::create($validated);
-        return response()->json($restaurant, 201);
+        return Restaurant::create($data);
     }
 
-    public function show($id)
+    public function show(Restaurant $restaurant)
     {
-        return Restaurant::findOrFail($id);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $restaurant = Restaurant::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string',
-            'address' => 'sometimes|required|string',
-            'phone' => 'nullable|string',
-            'email' => 'nullable|email',
-            'opening_hours' => 'nullable|json',
-        ]);
-
-        $restaurant->update($validated);
         return $restaurant;
     }
 
-    public function destroy($id)
+    public function update(Request $request, Restaurant $restaurant)
     {
-        $restaurant = Restaurant::findOrFail($id);
-        $restaurant->delete();
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'opening_hours' => 'nullable|json',
+        ]);
 
-        return response()->json(null, 204);
+        $restaurant->update($data);
+        return $restaurant;
+    }
+
+    public function destroy(Restaurant $restaurant)
+    {
+        $restaurant->delete();
+        return response()->noContent();
     }
 }

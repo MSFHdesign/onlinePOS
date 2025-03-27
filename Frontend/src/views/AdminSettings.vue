@@ -1,24 +1,82 @@
 <template>
   <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-5">
     <h2 class="text-lg font-bold text-gray-700 dark:text-white mb-4">Indstillinger</h2>
-    
-    <p class="text-gray-600 dark:text-gray-300 mb-4">
-      Dette er en placeholder for indstillingssiden. Her kan du implementere indstillinger for din applikation.
-    </p>
-    
-    <div class="p-4 bg-gray-100 dark:bg-slate-700 rounded-md text-gray-700 dark:text-gray-300">
-      <p class="mb-2 font-medium">Mulige indstillinger kan inkludere:</p>
-      <ul class="list-disc list-inside space-y-1">
-        <li>Generelle butiksindstillinger</li>
-        <li>Brugeradministration</li>
-        <li>Integration med betalingssystemer</li>
-        <li>Moms og afgiftsindstillinger</li>
-        <li>Email notifikationer</li>
-      </ul>
-    </div>
+
+    <form @submit.prevent="save">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Venue Navn</label>
+          <input v-model="restaurant.name" class="input" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Adresse</label>
+          <input v-model="restaurant.address" class="input" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Telefon</label>
+          <input v-model="restaurant.phone" class="input" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input v-model="restaurant.email" class="input" />
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="text-md font-bold mb-2">Åbningstider</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div v-for="(value, day) in restaurant.opening_hours" :key="day">
+            <label class="block text-sm capitalize mb-1">{{ day }}</label>
+            <input v-model="restaurant.opening_hours[day]" class="input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <Button :disabled="loading" label="Gem ændringer" icon="pi pi-save" />
+      </div>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
-// Settings component logic would go here
-</script> 
+import { onMounted } from 'vue'
+import Button from 'primevue/button'
+import { useRestaurant } from '@/composables/useRestaurant'
+
+const {
+  restaurant,
+  loading,
+  error,
+  fetchRestaurant,
+  updateRestaurant,
+  createRestaurant
+} = useRestaurant()
+
+const save = async () => {
+  try {
+    if (restaurant.value.id) {
+      await updateRestaurant(restaurant.value.id, restaurant.value)
+    } else {
+      await createRestaurant(restaurant.value)
+    }
+
+    alert('Restaurantdata gemt!')
+  } catch (err) {
+    alert('Der skete en fejl ved opdatering.')
+  }
+}
+
+onMounted(async () => {
+  await fetchRestaurant()
+})
+</script>
+
+<style scoped>
+.input {
+  @apply w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-gray-800 dark:text-white;
+}
+</style>
