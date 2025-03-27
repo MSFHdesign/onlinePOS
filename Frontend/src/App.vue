@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import NavBar from './components/navigation/NavBar.vue';
+import { useRestaurant } from './composables/useRestaurant';
+
+// Access the restaurant store (which was already provided in main.ts)
+const { restaurant } = useRestaurant();
 </script>
 
 <template>
@@ -13,7 +17,7 @@ import NavBar from './components/navigation/NavBar.vue';
     
     <footer class="mt-8 border-t border-gray-200 dark:border-gray-700 py-4">
       <div class="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {{ new Date().getFullYear() }} OnlinePos. All rights reserved.
+        &copy; {{ new Date().getFullYear() }} {{ restaurant.name || 'OnlinePos' }}. All rights reserved.
       </div>
     </footer>
   </div>

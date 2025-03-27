@@ -52,6 +52,11 @@
               v-model:items="cartItems"
               @checkout="openCheckoutModal"
             />
+            
+            <!-- Restaurant Info Component -->
+            <div class="mt-4">
+              <RestaurantInfo />
+            </div>
           </div>
         </div>
       </div>
@@ -89,6 +94,7 @@ import ProductGrid from '@/components/takeaway/ProductGrid.vue';
 import ShoppingCart from '@/components/takeaway/ShoppingCart.vue';
 import CheckoutModal from '@/components/takeaway/CheckoutModal.vue';
 import SearchSortControls from '@/components/takeaway/SearchSortControls.vue';
+import RestaurantInfo from '@/components/takeaway/RestaurantInfo.vue';
 import type { Product } from '@/types/Product';
 
 // Define CartItem type locally if not available in types

@@ -4,6 +4,9 @@ import './assets/tailwind.css'
 import App from './App.vue'
 import router from './router'
 
+// Import Restaurant Store
+import { provideRestaurantStore } from './composables/useRestaurant'
+
 // PrimeVue Imports
 import PrimeVue from 'primevue/config'
 import Button from 'primevue/button'
@@ -45,5 +48,10 @@ app.component('Card', Card)
 app.component('Panel', Panel)
 app.component('Breadcrumb', Breadcrumb)
 app.component('Toast', Toast)
+
+// Provide global stores before mounting
+const restaurantStore = provideRestaurantStore()
+// Load restaurant data on app startup
+restaurantStore.fetchRestaurant()
 
 app.mount('#app') 

@@ -2,6 +2,14 @@
   <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-5">
     <h2 class="text-lg font-bold text-gray-700 dark:text-white mb-4">Indstillinger</h2>
 
+    <div v-if="error" class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+      {{ error }}
+    </div>
+
+    <div v-if="successMessage" class="mb-4 p-3 bg-green-100 text-green-700 rounded">
+      {{ successMessage }}
+    </div>
+
     <form @submit.prevent="save">
       <!-- Basic Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -27,25 +35,28 @@
       <div class="mt-6">
         <h3 class="text-md font-bold mb-2">Åbningstider</h3>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div v-for="(value, day) in restaurant.opening_hours" :key="day">
-            <label class="block text-sm capitalize mb-1">{{ day }}</label>
-            <input v-model="restaurant.opening_hours[day]" class="input" placeholder="10:00 - 22:00" />
+          <div v-for="day in orderedDays" :key="day.key">
+            <label class="block text-sm font-medium mb-1">{{ day.label }}</label>
+            <input v-model="restaurant.opening_hours[day.key]" class="input" placeholder="08:00 - 22:00" />
           </div>
         </div>
       </div>
 
       <!-- Submit -->
       <div class="mt-6 flex justify-end">
-        <Button :disabled="loading" label="Gem ændringer" icon="pi pi-save" />
+        <Button :loading="loading" type="submit" label="Gem ændringer" icon="pi pi-save" />
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import Button from 'primevue/button'
 import { useRestaurant } from '@/composables/useRestaurant'
+import { ORDERED_DAYS } from '@/constants/days'
+
+const successMessage = ref('')
 
 const {
   restaurant,
@@ -56,28 +67,48 @@ const {
   createRestaurant
 } = useRestaurant()
 
-const save = async () => {
-  try {
-    if (restaurant.value?.id) {
-      await updateRestaurant(restaurant.value.id, restaurant.value)
-      console.log("restaurant been updated: "+restaurant.value)
-    } else {
-      await createRestaurant(restaurant.value)
-      console.log("restaurant been created: "+restaurant.value)
-    }
+// Use the imported ORDERED_DAYS constant
+const orderedDays = ORDERED_DAYS;
 
-    alert('Restaurantdata gemt!')
+const save = async () => {
+  successMessage.value = ''
+  
+  try {
+    // Create a clean copy of the data to avoid reactivity issues
+    const restaurantData = JSON.parse(JSON.stringify(restaurant.value))
+    
+    if (restaurantData.id) {
+      const result = await updateRestaurant(restaurantData.id, restaurantData)
+      successMessage.value = 'Restaurant opdateret!'
+    } else {
+      const result = await createRestaurant(restaurantData)
+      successMessage.value = 'Restaurant oprettet!'
+    }
   } catch (err) {
     console.error('Fejl ved gemning:', err)
-    alert('Der skete en fejl ved opdatering.')
+    if (err instanceof Error) {
+      error.value = `Der skete en fejl ved opdatering: ${err.message}`
+    } else {
+      error.value = 'Der skete en ukendt fejl ved opdatering.'
+    }
   }
 }
 
 // Hent første restaurant ved mount
 onMounted(async () => {
-  await fetchRestaurant()
-  console.log("Restaurant been fetched:")
-  console.log(restaurant.value)
+  try {
+    await fetchRestaurant()
+
+    if (!restaurant.value.opening_hours) {
+      restaurant.value.opening_hours = {
+        monday: '', tuesday: '', wednesday: '', thursday: '',
+        friday: '', saturday: '', sunday: ''
+      }
+    }
+  } catch (err) {
+    console.error('Fejl ved indlæsning af restaurant:', err)
+    error.value = 'Kunne ikke indlæse restaurant data.'
+  }
 })
 </script>
 
