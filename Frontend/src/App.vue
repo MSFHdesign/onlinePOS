@@ -1,19 +1,11 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import ThemeToggler from './components/theme/ThemeToggler.vue';
+import NavBar from './components/navigation/NavBar.vue';
 </script>
 
 <template>
   <div class="min-h-screen transition-colors duration-300 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
-    <header class="border-b border-gray-200 dark:border-gray-700">
-      <div class="container mx-auto p-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-shopping-cart text-xl text-primary-light dark:text-primary-dark"></i>
-          <h1 class="text-2xl font-bold">OnlinePos</h1>
-        </div>
-        <ThemeToggler />
-      </div>
-    </header>
+    <NavBar />
     
     <main class="container mx-auto p-4">
       <RouterView />
