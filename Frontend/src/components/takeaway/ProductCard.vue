@@ -8,6 +8,13 @@
         :alt="product.name" 
         class="w-full h-full object-cover"
       />
+      <img 
+        v-else-if="product.tag_name && !imageFailed" 
+        :src="getFoodImageUrl(product.tag_name)"
+        :alt="product.name" 
+        class="w-full h-full object-cover"
+        @error="handleImageError"
+      />
       <div v-else class="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
         <i class="pi pi-image text-5xl"></i>
       </div>
@@ -55,6 +62,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 import type { Product } from '@/types/Product';
+import { useFoodImages } from '@/composables/useFoodImages';
 
 const props = defineProps<{
   product: Product
@@ -63,6 +71,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'add-to-cart', product: Product): void
 }>();
+
+const { 
+  imageFailed, 
+  getFoodImageUrl, 
+  handleImageError 
+} = useFoodImages();
 
 const formatPrice = (price: string | number): string => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;

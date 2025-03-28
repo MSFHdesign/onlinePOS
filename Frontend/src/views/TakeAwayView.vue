@@ -10,12 +10,7 @@
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
           
           <!-- Featured Product Section -->
-          <div v-if="featuredProduct" class="mb-6">
-            <FeaturedProduct 
-              :product="featuredProduct" 
-              @add-to-cart="addToCart"
-            />
-          </div>
+      
           
           <!-- Sticky Header with Filters and Search -->
           <div class="sticky-header bg-slate-800 pb-4 pt-2 z-20">
@@ -190,8 +185,30 @@ const fetchProducts = async () => {
     const res = await get('/products');
     products.value = res;
     
-    // Find a featured product (product with is_featured = true)
-    featuredProduct.value = products.value.find(p => p.is_featured) || null;
+    // Find a featured product based on is_featured flag or sort order
+    // First, check if there's a product explicitly marked as featured
+    const explicitlyFeatured = products.value.find(p => p.is_featured);
+    
+    if (explicitlyFeatured) {
+      featuredProduct.value = explicitlyFeatured;
+    } else {
+      // If no product is explicitly marked as featured, use the first one by sort_order
+      // but don't use products that were recently added (for example, in the last 24h)
+      const sortedProducts = [...products.value]
+        .sort((a, b) => {
+          // Handle null or undefined sort_order values
+          const sortA = typeof a.sort_order === 'number' ? a.sort_order : Infinity;
+          const sortB = typeof b.sort_order === 'number' ? b.sort_order : Infinity;
+          return sortA - sortB;
+        });
+      
+      // Use the first product with sort_order as featured
+      if (sortedProducts.length > 0 && sortedProducts[0].sort_order !== undefined && sortedProducts[0].sort_order !== null) {
+        featuredProduct.value = sortedProducts[0];
+      } else {
+        featuredProduct.value = null;
+      }
+    }
     
     // Add event listener for category reset
     document.addEventListener('reset-category', handleCategoryReset);

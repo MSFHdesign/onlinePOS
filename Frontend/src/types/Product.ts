@@ -16,6 +16,8 @@ export interface ProductFormData {
   description: string;
   price: number;
   vat: number;
-  tag_name: string;
-  tag_color: string;
+  tag_name: string | null;
+  tag_color: string | null;
+  is_featured?: boolean;
+  sort_order?: number;
 } 

@@ -14,6 +14,13 @@
           :alt="product?.name" 
           class="w-full h-full object-cover rounded-lg"
         />
+        <img 
+          v-else-if="product && product.tag_name && !imageFailed" 
+          :src="getFoodImageUrl(product.tag_name)"
+          :alt="product?.name" 
+          class="w-full h-full object-cover rounded-lg"
+          @error="(e) => handleImageError(e, true)"
+        />
         <i v-else class="pi pi-shopping-bag text-4xl text-white"></i>
       </div>
       <h4 class="font-semibold mb-1">{{ product?.name || 'Featured Product' }}</h4>
@@ -33,9 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref } from 'vue';
 import type { Product } from '@/types/Product';
 import { useToast } from 'primevue/usetoast';
+import { useFoodImages } from '@/composables/useFoodImages';
 
 const props = defineProps<{
   product?: Product | null;
@@ -46,6 +54,11 @@ const emit = defineEmits<{
 }>();
 
 const toast = useToast();
+const { 
+  imageFailed, 
+  getFoodImageUrl, 
+  handleImageError 
+} = useFoodImages();
 
 const formatPrice = (price?: number | string): string => {
   if (!price) return '0,00 kr';
