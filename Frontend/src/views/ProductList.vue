@@ -1,153 +1,180 @@
 <template>
   <div class="p-4 max-w-5xl mx-auto">
+    <!-- Header Section -->
     <div class="mb-4 bg-white dark:bg-slate-800 rounded-lg shadow p-5">
-      <h2 class="text-lg font-bold text-gray-700 dark:text-white">
-        Alle produkter ({{ items.length }})
-      </h2>
-    </div>
-
-    <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="product-table w-full border-collapse min-w-[750px]">
-          <thead>
-            <tr>
-              <th class="w-12"></th>
-              <th class="w-20">ID</th>
-              <th class="w-1/5">Navn</th>
-              <th class="w-2/5">Beskrivelse</th>
-              <th class="w-20">Pris</th>
-              <th class="w-20">Moms</th>
-              <th class="w-28">Tag</th>
-              <th class="w-12"></th>
-            </tr>
-          </thead>
-          <draggable
-            tag="tbody"
-            v-model="items"
-            item-key="id"
-            handle=".drag-handle"
-            @end="updateOrder"
-          >
-            <template #item="{ element }">
-              <tr>
-                <td>
-                  <div class="drag-handle flex items-center justify-center cursor-move opacity-50">
-                    <span class="pi pi-bars"></span>
-                  </div>
-                </td>
-                <td>{{ element.id }}</td>
-                <td class="truncate max-w-[150px]" :title="element.name">{{ element.name }}</td>
-                <td class="truncate max-w-[250px]" :title="element.description">{{ element.description }}</td>
-                <td>{{ formatPrice(element.price) }}</td>
-                <td>{{ parseFloat(element.vat) }} %</td>
-                <td>
-                  <div
-                    v-if="element.tag_name"
-                    class="tag-pill truncate max-w-[100px]"
-                    :style="{
-                      backgroundColor: element.tag_color,
-                      color: getContrastColor(element.tag_color)
-                    }"
-                    :title="element.tag_name"
-                  >
-                    {{ element.tag_name }}
-                  </div>
-                  <span v-else>-</span>
-                </td>
-                <td>
-                  <RouterLink :to="`/admin/product/${element.id}`">
-                    <span class="pi pi-chevron-right text-gray-400"></span>
-                  </RouterLink>
-                </td>
-              </tr>
-            </template>
-          </draggable>
-        </table>
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div>
+          <h2 class="text-lg font-bold text-gray-700 dark:text-white mb-1">
+            Alle produkter <span v-if="!loading && !error">({{ products.length }})</span>
+          </h2>
+          <p v-if="!loading && !error && products.length > 0" class="text-sm text-gray-500 dark:text-gray-400">
+            Tip: Klik på en række for hurtig redigering
+          </p>
+        </div>
+        <div class="flex space-x-2 mt-2 sm:mt-0">
+          <Button 
+            label="Hurtig tilføj" 
+            icon="pi pi-plus" 
+            class="p-button-primary w-full sm:w-auto" 
+            @click="showAddModal = true"
+          />
+          <RouterLink to="/admin/create">
+            <Button label="Avanceret opret" icon="pi pi-cog" class="p-button-success w-full sm:w-auto" />
+          </RouterLink>
+        </div>
       </div>
     </div>
 
-    <div class="flex justify-end mt-4">
-      <RouterLink to="/admin/create">
-        <Button label="Opret nyt produkt" icon="pi pi-plus" class="p-button-success" />
-      </RouterLink>
+    <!-- Loading State - Using Skeleton -->
+    <div v-if="loading" class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+      <ProductTableSkeleton />
+    </div>
+
+    <!-- Error State -->
+    <ErrorMessage 
+      v-else-if="error" 
+      :message="error" 
+      retry 
+      retryText="Prøv igen"
+      @retry="fetchProducts" 
+    />
+
+    <!-- Empty State -->
+    <div 
+      v-else-if="products.length === 0" 
+      class="bg-white dark:bg-slate-800 rounded-lg shadow p-8 text-center"
+    >
+      <span class="pi pi-inbox text-4xl text-gray-400 dark:text-gray-500 mb-4 block"></span>
+      <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Ingen produkter fundet</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-6">Der er endnu ikke oprettet nogen produkter.</p>
+      <div class="flex justify-center space-x-3">
+        <Button label="Hurtig tilføj" icon="pi pi-plus" class="p-button-primary" @click="showAddModal = true" />
+        <RouterLink to="/admin/create">
+          <Button label="Avanceret opret" icon="pi pi-cog" class="p-button-success" />
+        </RouterLink>
+      </div>
+    </div>
+
+    <!-- Product Table -->
+    <div v-else class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+      <ProductTable 
+        v-model:products="products" 
+        @order-updated="updateOrder" 
+        @product-updated="handleProductUpdated"
+        @modal-closed="handleModalClosed"
+      />
     </div>
   </div>
+  
+  <!-- Toast for notifications -->
+  <Toast position="top-right" />
+  
+  <!-- Add Product Modal -->
+  <AddProductModal
+    v-model="showAddModal"
+    @product-created="handleProductCreated"
+    @close="handleAddModalClosed"
+  />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, inject, ref } from 'vue'
+import { useProducts } from '@/composables/useProducts'
+import ProductTable from '@/components/product/ProductTable.vue'
+import ProductTableSkeleton from '@/components/product/ProductTableSkeleton.vue'
+import ErrorMessage from '@/components/feedback/ErrorMessage.vue'
+import AddProductModal from '@/components/product/AddProductModal.vue'
+import Button from 'primevue/button'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 import type { Product } from '@/types/Product'
-import { useSortableList } from '@/composables/useSortableList'
-import draggable from 'vuedraggable'
-import { useApi } from '@/composables/useApi'
 
-const { get } = useApi()
-const router = useRouter()
+const toast = useToast()
+const { products, loading, error, fetchProducts, updateProductOrder } = useProducts()
+const showAddModal = ref(false)
 
-const { items, updateOrder } = useSortableList<Product>('/products/sort')
-
-const fetchProducts = async () => {
+const updateOrder = async () => {
   try {
-    const res = await get('/products')
-    items.value = res // brug items direkte
+    // Get array of product IDs for the backend
+    const order = products.value.map((item) => item.id)
+    
+    // Update backend
+    await updateProductOrder(order)
+    
+    // Force a re-fetch to ensure all data is consistent
+    await fetchProducts()
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Rækkefølge opdateret',
+      detail: 'Produkternes rækkefølge er blevet gemt',
+      life: 3000
+    })
   } catch (err) {
-    console.error('Fejl ved hentning:', err)
+    toast.add({
+      severity: 'error',
+      summary: 'Fejl',
+      detail: 'Der opstod en fejl ved opdatering af rækkefølgen',
+      life: 5000
+    })
   }
 }
 
-const formatPrice = (price: string | number): string => {
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price
-  return numPrice.toFixed(2).replace('.', ',')
+const handleProductUpdated = (updatedProduct: Product) => {
+  toast.add({
+    severity: 'success',
+    summary: 'Produkt opdateret',
+    detail: `${updatedProduct.name} er blevet opdateret`,
+    life: 4000
+  })
+  
+  // The actual update is already handled by the v-model binding
+  // This is just for notification purposes
 }
 
-const getContrastColor = (hexColor: string | null): string => {
-  if (!hexColor) return '#000000'
-  const hex = hexColor.replace('#', '')
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5 ? '#000000' : '#FFFFFF'
+const handleProductCreated = (newProduct: Product) => {
+  toast.add({
+    severity: 'success',
+    summary: 'Produkt oprettet',
+    detail: `${newProduct.name} er blevet oprettet`,
+    life: 4000
+  })
+  
+  // Refresh product list to include the new product
+  fetchProducts()
 }
 
-onMounted(fetchProducts)
+const handleAddModalClosed = (reason: string) => {
+  if (reason === 'created') {
+    // Already handled by handleProductCreated
+  } else if (reason === 'canceled') {
+    toast.add({
+      severity: 'info',
+      summary: 'Oprettelse annulleret',
+      detail: 'Ingen produkter blev oprettet',
+      life: 3000
+    })
+  }
+}
+
+const handleModalClosed = (reason: string) => {
+  // Only show cancel toast when explicitly canceled
+  if (reason === 'canceled') {
+    toast.add({
+      severity: 'info',
+      summary: 'Redigering annulleret',
+      detail: 'Ingen ændringer blev gemt',
+      life: 3000
+    })
+  }
+}
+
+// For testing purposes - will be triggered once on mount
+onMounted(() => {
+  fetchProducts()
+})
 </script>
 
 <style scoped>
-.product-table th {
-  @apply font-medium text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 px-4 py-2.5 border-b-2 border-gray-200;
-}
-
-.product-table td {
-  @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700;
-}
-
-.product-table tr:last-child td {
-  @apply border-b-0;
-}
-
-.product-table tr:hover {
-  @apply bg-gray-50 dark:bg-slate-700;
-}
-
-.tag-pill {
-  @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-medium;
-}
-
-.pi-chevron-right {
-  @apply transition-colors;
-}
-
-.pi-chevron-right:hover {
-  @apply text-blue-500;
-}
-
-.drag-handle {
-  @apply cursor-move;
-}
-
-.truncate {
-  @apply overflow-hidden text-ellipsis whitespace-nowrap;
-}
+/* Styles are now in the ProductTable component */
 </style>

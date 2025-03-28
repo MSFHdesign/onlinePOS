@@ -25,26 +25,15 @@
           </div>
         </div>
         
-        <!-- Decorative Element -->
-        <div class="relative hidden md:block">
-          <div class="absolute -top-16 -right-16 w-64 h-64 bg-indigo-400 bg-opacity-20 rounded-full filter blur-xl"></div>
-          <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-purple-400 bg-opacity-20 rounded-full filter blur-lg"></div>
-          <div class="relative bg-white bg-opacity-10 backdrop-filter backdrop-blur-sm border border-white border-opacity-20 rounded-xl p-6 w-64">
-            <div class="absolute -top-3 -right-3 bg-yellow-400 rounded-md px-2 py-1 text-xs font-bold text-yellow-900">
-              POPULÆR
-            </div>
-            <div class="w-full h-32 bg-indigo-200 bg-opacity-30 rounded-lg mb-4 flex items-center justify-center">
-              <i class="pi pi-shopping-bag text-4xl text-white"></i>
-            </div>
-            <h4 class="font-semibold mb-1">Dagens special</h4>
-            <p class="text-xs text-indigo-100 mb-3">Prøv vores mest populære produkt!</p>
-            <div class="flex justify-between items-center">
-              <span class="font-bold">99,00 kr</span>
-              <button class="bg-white text-indigo-700 rounded-full p-1.5 hover:bg-indigo-50 transition-colors">
-                <i class="pi pi-plus"></i>
-              </button>
-            </div>
-          </div>
+        <!-- Featured Product -->
+        <div v-if="!loading" class="hidden md:block">
+          <FeaturedProduct 
+            :product="featuredProduct" 
+            @add-to-cart="addToCart"
+          />
+        </div>
+        <div v-else class="hidden md:block h-64 w-64 flex items-center justify-center">
+          <i class="pi pi-spin pi-spinner text-3xl"></i>
         </div>
       </div>
     </div>
@@ -52,7 +41,68 @@
 </template>
 
 <script setup lang="ts">
-// No specific logic needed for this component
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import FeaturedProduct from '@/components/takeaway/FeaturedProduct.vue';
+import { useProducts } from '@/composables/useProducts';
+import { useToast } from 'primevue/usetoast';
+import type { Product } from '@/types/Product';
+
+const { loading, fetchFeaturedProduct } = useProducts();
+const featuredProduct = ref<Product | null>(null);
+let refreshInterval: number | null = null;
+const toast = useToast();
+
+// Define emits for cart functionality
+const emit = defineEmits<{
+  (e: 'add-to-cart', product: Product): void
+}>();
+
+// Add to cart function
+const addToCart = (product: Product) => {
+  // Emit the event up to the parent component (TakeAwayView)
+  emit('add-to-cart', product);
+  
+  // Show toast notification
+  toast.add({ 
+    severity: 'success', 
+    summary: 'Tilføjet til kurv', 
+    detail: `${product.name} er tilføjet til din kurv`, 
+    life: 2000 
+  });
+};
+
+// Load the featured product
+const loadFeaturedProduct = async () => {
+  try {
+    // Fetch the featured product (first by sort_order)
+    featuredProduct.value = await fetchFeaturedProduct();
+  } catch (error) {
+    console.error('Error loading featured product:', error);
+  }
+};
+
+onMounted(async () => {
+  await loadFeaturedProduct();
+  
+  // Set up a refresh interval to keep the featured product updated
+  // This ensures that if someone changes the order in the admin view,
+  // the featured product will update automatically
+  refreshInterval = window.setInterval(loadFeaturedProduct, 60000); // Refresh every minute
+});
+
+onBeforeUnmount(() => {
+  // Clear the interval when component is destroyed
+  if (refreshInterval !== null) {
+    window.clearInterval(refreshInterval);
+  }
+});
+
+// Listen for custom event that could be emitted when product order changes
+const handleOrderChanged = () => {
+  loadFeaturedProduct();
+};
+
+// Create a custom event bus or use props to listen for order changes
 </script>
 
 <style scoped>

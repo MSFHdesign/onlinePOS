@@ -4,7 +4,7 @@
     <Textarea 
       :id="id"
       :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
       :placeholder="placeholder"
       :disabled="disabled"
       :required="required"
