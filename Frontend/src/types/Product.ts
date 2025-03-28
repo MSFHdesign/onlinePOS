@@ -7,6 +7,7 @@ export interface Product {
   tag_name: string | null;
   tag_color: string | null;
   sort_order?: number;
+  image_url: string | null;
 }
 
 export interface ProductFormData {

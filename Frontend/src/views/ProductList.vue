@@ -76,14 +76,13 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import type { Product } from '@/types/Product'
 import { useSortableList } from '@/composables/useSortableList'
 import draggable from 'vuedraggable'
 import { useApi } from '@/composables/useApi'
 
 const { get } = useApi()
-const router = useRouter()
+
 
 const { items, updateOrder } = useSortableList<Product>('/products/sort')
 

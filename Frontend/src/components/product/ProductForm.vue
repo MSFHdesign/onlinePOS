@@ -26,7 +26,7 @@
             v-model="formData.description"
             label="Beskrivelse"
             placeholder="Skriv en beskrivelse af produktet"
-            rows="3"
+            :rows="3"
             autoResize
             :error="errors.description"
           />
@@ -54,8 +54,8 @@
                 v-model="displayPrice"
                 :label="priceMode === 'withVat' ? 'Pris (inkl. moms)' : 'Pris (ekskl. moms)'"
                 placeholder="0.00"
-                min="0"
-                step="0.01"
+                :min="0"
+                :step="0.01"
                 mode="decimal"
                 suffix=" kr."
                 required
@@ -70,8 +70,8 @@
                   v-model="formData.vat"
                   label="Momssats"
                   placeholder="25"
-                  min="0"
-                  max="100"
+                  :min="0"
+                  :max="100"
                   suffix=" %"
                   required
                   :error="errors.vat"

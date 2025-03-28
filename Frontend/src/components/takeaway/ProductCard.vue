@@ -16,7 +16,7 @@
       <div 
         v-if="product.tag_name" 
         class="absolute top-3 right-3 tag-badge truncate max-w-[120px]" 
-        :style="{ backgroundColor: product.tag_color, color: getContrastColor(product.tag_color) }"
+        :style="{ backgroundColor: product.tag_color || '#ccc', color: getContrastColor(product.tag_color) }"
         :title="product.tag_name"
       >
         {{ product.tag_name }}
@@ -32,7 +32,7 @@
       
       <!-- Product Description - Fixed height -->
       <div class="product-description-container">
-        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2" :title="product.description">
+        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2" :title="product.description ?? undefined">
           {{ product.description || 'Ingen beskrivelse tilgængelig' }}
         </p>
       </div>
