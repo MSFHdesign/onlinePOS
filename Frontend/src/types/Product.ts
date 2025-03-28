@@ -8,6 +8,7 @@ export interface Product {
   tag_color: string | null;
   sort_order?: number;
   image_url: string | null;
+  is_featured?: boolean;
 }
 
 export interface ProductFormData {

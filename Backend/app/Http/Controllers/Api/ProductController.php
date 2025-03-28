@@ -9,15 +9,45 @@ use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             Log::info('ProductController@index kaldt');
-            $products = Product::orderBy('sort_order')->get();
-            return response()->json($products);
+
+            // Get query parameters
+            $limit = $request->input('limit', null);
+            $sortBy = $request->input('sort_by', 'sort_order');
+            $sortDirection = $request->input('sort_direction', 'asc');
+
+            // Validate sort parameters to prevent SQL injection
+            $allowedSortFields = ['id', 'name', 'price', 'sort_order', 'created_at'];
+            if (!in_array($sortBy, $allowedSortFields)) {
+                $sortBy = 'sort_order';
+            }
+
+            if (!in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+                $sortDirection = 'asc';
+            }
+
+            // Build query
+            $query = Product::orderBy($sortBy, $sortDirection);
+
+            // Apply limit if specified
+            if (is_numeric($limit) && $limit > 0) {
+                $query->limit($limit);
+            }
+
+            // Execute query
+            $products = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $products
+            ]);
         } catch (\Exception $e) {
             Log::error('Fejl i ProductController@index: ' . $e->getMessage());
             return response()->json([
+                'success' => false,
                 'error' => 'Der opstod en serverfejl.',
                 'message' => $e->getMessage(),
                 'trace' => $e->getTrace()

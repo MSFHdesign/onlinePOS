@@ -1,12 +1,22 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <!-- Hero Section -->
-    <HeroSection />
+    <HeroSection @add-to-cart="addToCart" />
     
     <div class="container mx-auto px-4 pb-16 flex-grow overflow-hidden">
+      <!-- Main Content Area -->
       <div class="flex flex-col lg:flex-row gap-8 h-full">
-        <!-- Main Content Area -->
+        <!-- Left Column - Main Content -->
         <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+          
+          <!-- Featured Product Section -->
+          <div v-if="featuredProduct" class="mb-6">
+            <FeaturedProduct 
+              :product="featuredProduct" 
+              @add-to-cart="addToCart"
+            />
+          </div>
+          
           <!-- Sticky Header with Filters and Search -->
           <div class="sticky-header bg-slate-800 pb-4 pt-2 z-20">
             <!-- Category Filters -->
@@ -95,6 +105,7 @@ import ShoppingCart from '@/components/takeaway/ShoppingCart.vue';
 import CheckoutModal from '@/components/takeaway/CheckoutModal.vue';
 import SearchSortControls from '@/components/takeaway/SearchSortControls.vue';
 import RestaurantInfo from '@/components/takeaway/RestaurantInfo.vue';
+import FeaturedProduct from '@/components/takeaway/FeaturedProduct.vue';
 import type { Product } from '@/types/Product';
 
 // Define CartItem type locally if not available in types
@@ -118,6 +129,10 @@ const showTopFade = ref(false);
 const showBottomFade = ref(false);
 const topFadeOpacity = ref(0);
 const bottomFadeOpacity = ref(0);
+const scrolled = ref(false);
+const orderComplete = ref(false);
+const loading = ref(true);
+const featuredProduct = ref<Product | null>(null);
 
 // Handle search input from the search controls
 const handleSearch = (query: string) => {
@@ -170,9 +185,13 @@ const resetScrollPosition = () => {
 };
 
 const fetchProducts = async () => {
+  loading.value = true;
   try {
     const res = await get('/products');
     products.value = res;
+    
+    // Find a featured product (product with is_featured = true)
+    featuredProduct.value = products.value.find(p => p.is_featured) || null;
     
     // Add event listener for category reset
     document.addEventListener('reset-category', handleCategoryReset);
@@ -194,6 +213,8 @@ const fetchProducts = async () => {
       detail: 'Der opstod en fejl under indlæsning af produkter', 
       life: 3000 
     });
+  } finally {
+    loading.value = false;
   }
 };
 
